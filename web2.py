@@ -15,27 +15,38 @@ pygame.display.set_caption("Space Asteroid Game")
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
+YELLOW = (255, 255, 0)
 
 # Game variables
 clock = pygame.time.Clock()
 FPS = 60  # Frames per second
 player_speed = 5
 asteroid_speed = 3
+projectile_speed = 10
 player_health = 100
 score = 0
-
+  
 # Load player spaceship image
-player_img = pygame.image.load('Main Ship - Base - Full health.png')  # Replace with your spaceship image file
+player_img = pygame.image.load('sprites\spaceship\Main Ship - Base - Full health.png')  # Replace with your spaceship image file
 player_rect = player_img.get_rect()
 player_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50)
 
 # Asteroid list
 asteroids = []
 
+# Projectile list
+projectiles = []
+
 # Function to spawn asteroids
 def spawn_asteroid():
     asteroid = pygame.Rect(random.randint(0, SCREEN_WIDTH - 50), -50, 50, 50)
     asteroids.append(asteroid)
+
+# Function to shoot projectiles
+def shoot_projectile():
+    # Creates a projectile starting from the player's position
+    projectile = pygame.Rect(player_rect.centerx, player_rect.top, 5, 10)
+    projectiles.append(projectile)
 
 # Game loop
 def game_loop():
@@ -51,6 +62,9 @@ def game_loop():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:  # Press space to shoot
+                    shoot_projectile()
 
         # Player movement
         keys = pygame.key.get_pressed()
@@ -67,6 +81,12 @@ def game_loop():
         if random.randint(1, 60) == 1:
             spawn_asteroid()
 
+        # Move and handle projectiles
+        for projectile in projectiles[:]:
+            projectile.y -= projectile_speed
+            if projectile.y < 0:  # Remove off-screen projectiles
+                projectiles.remove(projectile)
+
         # Move asteroids and check for collisions
         for asteroid in asteroids[:]:
             asteroid.y += asteroid_speed
@@ -77,12 +97,25 @@ def game_loop():
                 asteroids.remove(asteroid)
                 score += 10
 
+        # Check for projectile-asteroid collisions
+        for projectile in projectiles[:]:
+            for asteroid in asteroids[:]:
+                if projectile.colliderect(asteroid):  # Projectile hits asteroid
+                    asteroids.remove(asteroid)
+                    projectiles.remove(projectile)
+                    score += 20  # Increase score for destroying an asteroid
+                    break
+
         # Draw player
         screen.blit(player_img, player_rect)
 
         # Draw asteroids
         for asteroid in asteroids:
             pygame.draw.rect(screen, RED, asteroid)
+
+        # Draw projectiles
+        for projectile in projectiles:
+            pygame.draw.rect(screen, YELLOW, projectile)
 
         # Display health and score
         font = pygame.font.SysFont(None, 36)
