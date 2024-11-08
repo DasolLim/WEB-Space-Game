@@ -1,0 +1,18 @@
+import pygame
+
+# Screen dimensions
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+FPS = 60
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+YELLOW = (255, 255, 0)
+
+# Game settings
+PLAYER_SPEED = 5
+ASTEROID_SPEED = 3
+PROJECTILE_SPEED = 10
+INITIAL_PLAYER_HEALTH = 100
