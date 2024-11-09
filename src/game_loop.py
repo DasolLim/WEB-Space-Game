@@ -118,9 +118,12 @@ def game_loop():
 
     asteroids = []
     projectiles = []
-    enemies = [Enemy('assets/sprites/enemies/enemy1.png', SCREEN_WIDTH)]
+    enemies = [Enemy('assets/sprites/enemies/enemy1.png', SCREEN_WIDTH) for _ in range(3)]  # Start with 3 enemies
     score = 0
     show_shop = False
+    destroyed_asteroids_count = 0  # Counter for asteroids destroyed by the player
+
+    font = pygame.font.SysFont(None, 36)  # Font for displaying text
 
     running = True
     while running:
@@ -141,7 +144,13 @@ def game_loop():
             screen.blit(background_image, (0, background_y2))
 
             # Draw all game objects
+            screen.fill(BLACK)
+
+            # Update player's image based on health every frame
+            player.update_image()
+            player.update_immunity()  # Update immunity status and flashing if applicable
             player.draw(screen)
+
             for asteroid in asteroids:
                 asteroid.draw(screen)
             for enemy in enemies:
@@ -150,12 +159,13 @@ def game_loop():
             for projectile in projectiles:
                 projectile.draw(screen)
 
-            # Display health and score
-            font = pygame.font.SysFont(None, 36)
+            # Display health, score, and destroyed asteroid count
             health_text = font.render(f"Health: {player.health}", True, WHITE)
             score_text = font.render(f"Score: {score}", True, WHITE)
+            destroyed_asteroids_text = font.render(f"Asteroids Destroyed: {destroyed_asteroids_count}", True, WHITE)
             screen.blit(health_text, (10, 10))
             screen.blit(score_text, (SCREEN_WIDTH - 150, 10))
+            screen.blit(destroyed_asteroids_text, (SCREEN_WIDTH // 2 - 100, 10))
 
             pygame.display.flip()
 
@@ -186,20 +196,27 @@ def game_loop():
             if random.randint(1, 60) == 1:
                 asteroids.append(Asteroid())
 
-        # Update projectiles
-        for projectile in projectiles[:]:
+        # Update projectiles and remove off-screen ones
+        projectiles_to_remove = []
+        for projectile in projectiles:
             projectile.move()
-            if projectile.rect.y < 0:
-                projectiles.remove(projectile)
+            # Remove projectile if it goes off the screen (top or bottom)
+            if projectile.rect.y < 0 or projectile.rect.y > SCREEN_HEIGHT:
+                projectiles_to_remove.append(projectile)
 
-        # Update asteroids and check collisions
-        for asteroid in asteroids[:]:
+        # Remove all projectiles marked for removal
+        for projectile in projectiles_to_remove:
+            projectiles.remove(projectile)
+
+        # Update asteroids and handle collisions
+        asteroids_to_remove = []
+        for asteroid in asteroids:
             if not asteroid.exploding:
                 asteroid.move()
 
-            # Check collision with player's hitbox
-            if asteroid.hitbox.colliderect(player.hitbox) and not asteroid.exploding:
-                player.health -= 10
+            # Check collision with player's hitbox only if the player is not immune
+            if not player.is_immune and asteroid.hitbox.colliderect(player.hitbox) and not asteroid.exploding:
+                player.take_damage(10)  # Use take_damage to apply immunity
                 asteroid.explode()  # Start explosion on collision
 
                 # Render end screen if health is zero or below
@@ -207,28 +224,40 @@ def game_loop():
                     end_screen()
                     return
 
-            elif asteroid.rect.top > SCREEN_HEIGHT:
-                asteroids.remove(asteroid)
-
             # Check for projectile-asteroid collisions
             for projectile in projectiles[:]:
-                if projectile.rect.colliderect(asteroid.rect) and not asteroid.exploding:
+                if projectile.direction == 'up' and projectile.rect.colliderect(asteroid.rect) and not asteroid.exploding:
                     projectiles.remove(projectile)
                     asteroid.explode()
                     score += 20
+                    destroyed_asteroids_count += 1
                     break
-                if asteroid.is_exploded():
-                    asteroids.remove(asteroid)
+
+            # Mark asteroid for removal if it is off-screen or exploded
+            if asteroid.rect.top > SCREEN_HEIGHT or asteroid.is_exploded():
+                asteroids_to_remove.append(asteroid)
+
+        # Remove all asteroids marked for removal
+        for asteroid in asteroids_to_remove:
+            asteroids.remove(asteroid)
+
+        # Check for enemy projectile collisions with player
+        for projectile in projectiles[:]:
+            if projectile.direction == 'down' and projectile.rect.colliderect(player.hitbox):
+                projectiles.remove(projectile)
+                player.take_damage(10)  # Damage the player using take_damage()
 
         # Check for projectile-enemy collisions
         for enemy in enemies[:]:
             for projectile in projectiles[:]:
                 if projectile.rect.colliderect(enemy.rect):
                     projectiles.remove(projectile)
-                    enemy.take_damage()  # Enemy takes 1 damage
+                    enemy.take_damage(player.damage)  # Apply damage based on player's power level
                     if enemy.hp <= 0:
-                        score += 50  # Score increase for defeating enemy
+                        score += 50
                         enemies.remove(enemy)
                         break
+
+        
 
         clock.tick(FPS)

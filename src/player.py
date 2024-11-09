@@ -38,27 +38,75 @@ class Player:
         self.speed = self.base_speed
         self.damage = self.base_damage
         self.max_health = self.base_health
+        self.health = self.max_health  # Set health to max health initially
+
+        # Immunity variables
+        self.is_immune = False
+        self.immunity_duration = 1500  # Immunity duration in milliseconds (1.5 seconds)
+        self.immunity_start_time = 0
+        self.visible = True  # Controls flashing
+
+    def start_immunity(self):
+        """Activate immunity and start flashing."""
+        self.is_immune = True
+        self.immunity_start_time = pygame.time.get_ticks()  # Record the start time of immunity
+        self.visible = True  # Start with visible
+
+    def update_immunity(self):
+        """Update immunity status and handle flashing."""
+        if self.is_immune:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.immunity_start_time >= self.immunity_duration:
+                self.is_immune = False  # End immunity after duration
+                self.visible = True  # Ensure player is visible after immunity ends
+            else:
+                # Flashing effect (toggle visibility every 200ms)
+                if (current_time - self.immunity_start_time) // 200 % 2 == 0:
+                    self.visible = False
+                else:
+                    self.visible = True
+
+    def take_damage(self, amount):
+        """Take damage if not immune and start immunity."""
+        if not self.is_immune:
+            self.health -= amount
+            self.start_immunity()  # Activate immunity after taking damage
 
     def upgrade_power(self):
+        """
+        Increases player power level and damage if coins are sufficient.
+        """
         if self.power_level < self.max_skill_level and self.coins >= self.power_level + 1:
             self.coins -= self.power_level + 1
             self.power_level += 1
             self.damage = self.base_damage + self.power_level
+            print(f"Power upgraded to level {self.power_level}, damage is now {self.damage}")
 
     def upgrade_speed(self):
+        """
+        Increases player speed level if coins are sufficient.
+        """
         if self.speed_level < self.max_skill_level and self.coins >= self.speed_level + 1:
             self.coins -= self.speed_level + 1
             self.speed_level += 1
             self.speed = self.base_speed + self.speed_level
+            print(f"Speed upgraded to level {self.speed_level}, speed is now {self.speed}")
 
     def upgrade_health(self):
+        """
+        Increases player health level and max health if coins are sufficient.
+        """
         if self.health_level < self.max_skill_level and self.coins >= self.health_level + 1:
             self.coins -= self.health_level + 1
             self.health_level += 1
             self.max_health = self.base_health + (self.health_level * 10)
+            self.health = min(self.health + 10, self.max_health)  # Increase current health by 10, up to max health
+            print(f"Health upgraded to level {self.health_level}, max health is now {self.max_health}")
 
     def update_image(self):
-        # Update player image based on current health
+        """
+        Update player image based on current health level.
+        """
         if self.health > 75:
             self.image = self.images["full"]
         elif 51 <= self.health <= 75:
@@ -69,6 +117,9 @@ class Player:
             self.image = self.images["low"]
 
     def move(self, keys):
+        """
+        Handles player movement based on key inputs and speed.
+        """
         dx = 0
         dy = 0
 
@@ -91,5 +142,6 @@ class Player:
         self.hitbox.y += dy
 
     def draw(self, screen):
-        screen.blit(self.image, self.rect)
+        if self.visible:  # Draw only if visible (for flashing effect)
+            screen.blit(self.image, self.rect)
         # pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 2)  # Uncomment to visualize the hitbox
