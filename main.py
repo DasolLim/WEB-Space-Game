@@ -1,5 +1,6 @@
 import pygame
 import sys
+import random
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK
 from src.game_loop import game_loop  # Import game_loop from src/game_loop.py
 
@@ -7,17 +8,48 @@ def home_screen():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Space Asteroid Game - Home")
-    font_title = pygame.font.SysFont(None, 72)
-    font_subtitle = pygame.font.SysFont(None, 48)
-    font_options = pygame.font.SysFont(None, 36)
+    font_title = pygame.font.Font(pygame.font.match_font('freesansbold', bold=True), 72)
+    font_subtitle = pygame.font.Font(pygame.font.match_font('freesansbold', bold=True), 48)
+    font_options = pygame.font.Font(pygame.font.match_font('freesansbold', bold=True), 36)
     clock = pygame.time.Clock()
 
+    # Load background image and scale to fit screen
+    background_image = pygame.image.load("assets/sprites/background/homescreen.png")
+    background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    background_y = 0
+
+    # Load asteroid sprite sheets
+    asteroid_sprite_sheet_1 = pygame.image.load("assets/sprites/background/asteroid2.png")
+    asteroid_sprite_sheet_2 = pygame.image.load("assets/sprites/background/asteroid3.png")
+    sprite_size_2 = 63  # Each cell is 101x101 pixels for asteroid3
+    sprite_size = 128  # Assuming each cell is 128x128 pixels
+    asteroid_frames_1 = []
+    asteroid_frames_2 = []
+
+    # Extract each frame from the first sprite sheet
+    for row in range(6):
+        for col in range(6):
+            frame = asteroid_sprite_sheet_1.subsurface(pygame.Rect(col * sprite_size, row * sprite_size, sprite_size, sprite_size))
+            frame = pygame.transform.scale(frame, (50, 50))
+            asteroid_frames_1.append(frame)
+
+    # Extract each frame from the second sprite sheet
+    for row in range(7):
+        for col in range(7):
+            frame = asteroid_sprite_sheet_2.subsurface(pygame.Rect(col * sprite_size_2, row * sprite_size_2, sprite_size_2, sprite_size_2))
+            frame = pygame.transform.scale(frame, (50, 50))
+            asteroid_frames_2.append(frame)
+
+    # Combine all asteroid frames
+    all_asteroid_frames = [asteroid_frames_1, asteroid_frames_2]
+    asteroids = []
+
     # Colors for text and buttons
-    title_color = (255, 223, 0)  # Gold
-    subtitle_color = (255, 69, 0)  # Red-Orange
-    button_color = (0, 128, 255)  # Blue
-    button_hover_color = (30, 144, 255)  # Lighter Blue
-    button_text_color = WHITE
+    title_color = (0, 255, 0)  # Bright Green
+    subtitle_color = (255, 255, 255)  # White
+    button_color = (255, 165, 0)  # Orange
+    button_hover_color = (255, 215, 0)  # Gold
+    button_text_color = BLACK
 
     # Button attributes
     button_width, button_height = 200, 60
@@ -27,6 +59,22 @@ def home_screen():
     running = True
     while running:
         screen.fill(BLACK)
+
+        # Spawn asteroids at random intervals
+        if random.randint(1, 60) == 1:
+            x_position = random.randint(0, SCREEN_WIDTH - 50)
+            asteroid_type = random.choice(all_asteroid_frames)  # Randomly choose an asteroid type
+            asteroids.append({'rect': pygame.Rect(x_position, -50, 50, 50), 'frame_index': 0, 'frames': asteroid_type})
+
+        # Update and draw asteroids
+        for asteroid in asteroids[:]:
+            asteroid['rect'].y += 3  # Move asteroid down
+            asteroid['frame_index'] = (asteroid['frame_index'] + 1) % len(asteroid['frames'])  # Update frame index for animation
+            current_frame = asteroid['frames'][asteroid['frame_index']]
+            screen.blit(current_frame, asteroid['rect'].topleft)
+
+            if asteroid['rect'].y > SCREEN_HEIGHT:
+                asteroids.remove(asteroid)
 
         # Display title and subtitle
         title_text = font_title.render("SPACE ASTEROID GAME", True, title_color)
@@ -40,8 +88,8 @@ def home_screen():
         start_color = button_hover_color if start_button_rect.collidepoint(mouse_pos) else button_color
         quit_color = button_hover_color if quit_button_rect.collidepoint(mouse_pos) else button_color
 
-        pygame.draw.rect(screen, start_color, start_button_rect)
-        pygame.draw.rect(screen, quit_color, quit_button_rect)
+        pygame.draw.rect(screen, start_color, start_button_rect, border_radius=15)
+        pygame.draw.rect(screen, quit_color, quit_button_rect, border_radius=15)
 
         start_text = font_options.render("Start Game", True, button_text_color)
         quit_text = font_options.render("Quit", True, button_text_color)
