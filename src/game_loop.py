@@ -87,28 +87,6 @@ def game_loop():
             if random.randint(1, 60) == 1:
                 asteroids.append(Asteroid())
 
-<<<<<<< HEAD
-            # Update projectiles
-            for projectile in projectiles[:]:
-                projectile.move()
-                if projectile.rect.y < 0:
-                    projectiles.remove(projectile)
-
-            # Update asteroids and handle collisions
-            for asteroid in asteroids[:]:
-                if not asteroid.exploding:
-                    asteroid.move()
-
-                # Check collision with player's hitbox
-                if asteroid.hitbox.colliderect(player.hitbox) and not asteroid.exploding:
-                    player.health -= 10
-                    asteroid.explode()  # Start explosion on collision
-
-                elif asteroid.hitbox.top > SCREEN_HEIGHT:
-                    asteroids.remove(asteroid)
-
-            # Check for player projectile-asteroid collisions
-=======
         # Update projectiles and remove off-screen ones
         projectiles_to_remove = []
         for projectile in projectiles:
@@ -133,7 +111,6 @@ def game_loop():
                 asteroid.explode()  # Start explosion on collision
 
             # Check for projectile-asteroid collisions
->>>>>>> 2d5dcfc66794fc8d4a80985c556d8e24e5014857
             for projectile in projectiles[:]:
                 if projectile.direction == 'up' and projectile.rect.colliderect(asteroid.rect) and not asteroid.exploding:
                     projectiles.remove(projectile)
@@ -154,11 +131,7 @@ def game_loop():
         for projectile in projectiles[:]:
             if projectile.direction == 'down' and projectile.rect.colliderect(player.hitbox):
                 projectiles.remove(projectile)
-<<<<<<< HEAD
-                player.health -= 10  # Damage the player
-=======
                 player.take_damage(10)  # Damage the player using take_damage()
->>>>>>> 2d5dcfc66794fc8d4a80985c556d8e24e5014857
 
         # Check for projectile-enemy collisions
         for enemy in enemies[:]:
