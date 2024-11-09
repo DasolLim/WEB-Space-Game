@@ -35,7 +35,7 @@ def game_loop():
                 sys.exit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 projectiles.append(Projectile(player.rect.centerx, player.rect.top))
-                shoot_sound = pygame.mixer.Sound('assets/sounds/laser.mp3')
+                shoot_sound = pygame.mixer.Sound('assets/sprites/sounds/laser.mp3')
                 shoot_sound.play()
 
         # Player movement
