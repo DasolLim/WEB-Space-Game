@@ -58,7 +58,7 @@ def home_screen():
 
     running = True
     while running:
-        screen.fill(BLACK)
+        screen.blit(background_image, (0, 0))
 
         # Spawn asteroids at random intervals
         if random.randint(1, 60) == 1:

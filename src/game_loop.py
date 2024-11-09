@@ -143,9 +143,6 @@ def game_loop():
             screen.blit(background_image, (0, background_y1))
             screen.blit(background_image, (0, background_y2))
 
-            # Draw all game objects
-            screen.fill(BLACK)
-
             # Update player's image based on health every frame
             player.update_image()
             player.update_immunity()  # Update immunity status and flashing if applicable
