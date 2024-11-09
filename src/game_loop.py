@@ -12,7 +12,13 @@ def game_loop():
     pygame.display.set_caption("Space Asteroid Game")
     clock = pygame.time.Clock()
 
-    player = Player('assets/sprites/spaceship/Main Ship - Base - Full health.png')
+    player = Player([
+        'assets\sprites\spaceship\MainShipBaseFullhealth.png',   # Image 1: health 100-76
+        'assets\sprites\spaceship\MainShipBaseSlightdamage.png', # Image 2: health 75-51
+        'assets\sprites\spaceship\MainShipBaseDamaged.png',      # Image 3: health 50-26
+        'assets\sprites\spaceship\MainShipBaseVerydamaged.png',  # Image 4: health 25-0
+    ])
+
     asteroids = []
     projectiles = []
     score = 0
@@ -29,6 +35,8 @@ def game_loop():
                 sys.exit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 projectiles.append(Projectile(player.rect.centerx, player.rect.top))
+                shoot_sound = pygame.mixer.Sound('assets/sounds/laser.mp3')
+                shoot_sound.play()
 
         # Player movement
         keys = pygame.key.get_pressed()
@@ -46,22 +54,32 @@ def game_loop():
 
         # Update asteroids and check collisions
         for asteroid in asteroids[:]:
-            asteroid.move()
-            if asteroid.rect.colliderect(player.rect):
+            if not asteroid.exploding:
+                asteroid.move()
+                
+            if asteroid.rect.colliderect(player.rect) and not asteroid.exploding:
                 player.health -= 10
-                asteroids.remove(asteroid)
+                asteroid.explode()  # Start explosion on collision
+
             elif asteroid.rect.top > SCREEN_HEIGHT:
                 asteroids.remove(asteroid)
                 score += 10
 
-        # Check for projectile-asteroid collisions
-        for projectile in projectiles[:]:
-            for asteroid in asteroids[:]:
-                if projectile.rect.colliderect(asteroid.rect):
+            # Check for projectile-asteroid collisions
+            for projectile in projectiles[:]:
+                if projectile.rect.colliderect(asteroid.rect) and not asteroid.exploding:
                     projectiles.remove(projectile)
-                    asteroids.remove(asteroid)
+                    asteroid.explode()  # Start explosion on collision
                     score += 20
                     break
+
+            # Remove asteroid if explosion animation is complete
+            if asteroid.is_exploded():
+                asteroids.remove(asteroid)
+
+        # Draw asteroids
+        for asteroid in asteroids:
+            asteroid.draw(screen)
 
         # Draw everything
         player.draw(screen)
