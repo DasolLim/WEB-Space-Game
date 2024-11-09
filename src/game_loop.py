@@ -49,6 +49,9 @@ def game_loop():
     enemies = [Enemy('assets/sprites/enemies/enemy1.png', SCREEN_WIDTH)]
     score = 0
     show_shop = False
+    destroyed_asteroids_count = 0  # Counter for asteroids destroyed by the player
+
+    font = pygame.font.SysFont(None, 36)  # Font for displaying text
 
     running = True
     while running:
@@ -65,12 +68,13 @@ def game_loop():
             for projectile in projectiles:
                 projectile.draw(screen)
 
-            # Display health and score
-            font = pygame.font.SysFont(None, 36)
+            # Display health, score, and destroyed asteroid count
             health_text = font.render(f"Health: {player.health}", True, WHITE)
             score_text = font.render(f"Score: {score}", True, WHITE)
+            destroyed_asteroids_text = font.render(f"Asteroids Destroyed: {destroyed_asteroids_count}", True, WHITE)  # Destroyed asteroids count
             screen.blit(health_text, (10, 10))
             screen.blit(score_text, (SCREEN_WIDTH - 150, 10))
+            screen.blit(destroyed_asteroids_text, (SCREEN_WIDTH // 2 - 100, 10))  # Display in the top center
 
             pygame.display.flip()
 
@@ -101,60 +105,77 @@ def game_loop():
             if random.randint(1, 60) == 1:
                 asteroids.append(Asteroid())
 
-        # Spawn asteroids at intervals
-        if random.randint(1, 60) == 1:
-            asteroids.append(Asteroid())
-
         # Update projectiles
         for projectile in projectiles[:]:
             projectile.move()
             if projectile.rect.y < 0:
                 projectiles.remove(projectile)
 
-        # Update asteroids and check collisions
+        # Update asteroids and handle collisions
         for asteroid in asteroids[:]:
             if not asteroid.exploding:
                 asteroid.move()
-                
+
             # Check collision with player's hitbox
             if asteroid.hitbox.colliderect(player.hitbox) and not asteroid.exploding:
                 player.health -= 10
                 asteroid.explode()  # Start explosion on collision
 
+            elif asteroid.hitbox.top > SCREEN_HEIGHT:
+                asteroids.remove(asteroid)
+
+        # Check for projectile-asteroid collisions
+        # Update projectiles
+        for projectile in projectiles[:]:
+            projectile.move()
+            if projectile.rect.y < 0 or projectile.rect.y > SCREEN_HEIGHT:
+                projectiles.remove(projectile)
+
+        # Handle collisions
+        for asteroid in asteroids[:]:
+            if not asteroid.exploding:
+                asteroid.move()
+
+            # Check collision with player's hitbox
+            if asteroid.hitbox.colliderect(player.hitbox) and not asteroid.exploding:
+                player.health -= 10
+                asteroid.explode()
+
             elif asteroid.rect.top > SCREEN_HEIGHT:
                 asteroids.remove(asteroid)
 
-            # Check for projectile-asteroid collisions
+            # Check for player projectile-asteroid collisions
             for projectile in projectiles[:]:
-                projectile.move()
-                if projectile.rect.y < 0:
+                if projectile.direction == 'up' and projectile.rect.colliderect(asteroid.rect) and not asteroid.exploding:
                     projectiles.remove(projectile)
-
-            # Update asteroids and handle collisions
-            for asteroid in asteroids[:]:
-                if not asteroid.exploding:
-                    asteroid.move()
-                if asteroid.hitbox.colliderect(player.hitbox) and not asteroid.exploding:
-                    player.health -= 10
                     asteroid.explode()
-                elif asteroid.hitbox.top > SCREEN_HEIGHT:
-                    asteroids.remove(asteroid)
-                for projectile in projectiles[:]:
-                    if projectile.rect.colliderect(asteroid.rect) and not asteroid.exploding:
-                        projectiles.remove(projectile)
-                        asteroid.explode()
-                        score += 20
+                    score += 20
+                    destroyed_asteroids_count += 1
+                    break
+
+            if asteroid.is_exploded():
+                asteroids.remove(asteroid)
+
+        # Check for enemy projectile collisions with player
+        for projectile in projectiles[:]:
+            if projectile.direction == 'down' and projectile.rect.colliderect(player.hitbox):
+                projectiles.remove(projectile)
+                player.health -= 10  # Damage the player
+
+
+            # Remove asteroid if explosion animation is complete
+            if asteroid.is_exploded():
+                asteroids.remove(asteroid)
+
+        # Check for projectile-enemy collisions
+        for enemy in enemies[:]:
+            for projectile in projectiles[:]:
+                if projectile.rect.colliderect(enemy.rect):
+                    projectiles.remove(projectile)
+                    enemy.take_damage()
+                    if enemy.hp <= 0:
+                        score += 50
+                        enemies.remove(enemy)
                         break
-                if asteroid.is_exploded():
-                    asteroids.remove(asteroid)
- # Check for projectile-enemy collisions
-            for enemy in enemies[:]:
-                for projectile in projectiles[:]:
-                    if projectile.rect.colliderect(enemy.rect):
-                        projectiles.remove(projectile)
-                        enemy.take_damage()  # Enemy takes 1 damage
-                        if enemy.hp <= 0:
-                            score += 50  # Score increase for defeating enemy
-                            enemies.remove(enemy)
-                            break
+
         clock.tick(FPS)

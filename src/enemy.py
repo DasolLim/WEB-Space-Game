@@ -38,8 +38,8 @@ class Enemy(pygame.sprite.Sprite):
         # Shooting logic
         self.shoot_timer += 1
         if self.shoot_timer >= self.shoot_interval:
-            # Reset timer and shoot a projectile
-            projectile = Projectile(self.rect.centerx, self.rect.bottom, 'down')
+            # Shoot a red projectile moving downward
+            projectile = Projectile(self.rect.centerx, self.rect.bottom, direction='down', color=(255, 0, 0))
             projectiles.append(projectile)  # Add to projectiles list
             self.shoot_timer = 0
             self.shoot_interval = random.randint(60, 120)  # Reset interval
