@@ -39,6 +39,38 @@ class Player:
         self.damage = self.base_damage
         self.max_health = self.base_health
 
+        # Immunity variables
+        self.is_immune = False
+        self.immunity_duration = 1500  # Immunity duration in milliseconds (1.5 seconds)
+        self.immunity_start_time = 0
+        self.visible = True  # Controls flashing
+
+    def start_immunity(self):
+        """Activate immunity and start flashing."""
+        self.is_immune = True
+        self.immunity_start_time = pygame.time.get_ticks()  # Record the start time of immunity
+        self.visible = True  # Start with visible
+
+    def update_immunity(self):
+        """Update immunity status and handle flashing."""
+        if self.is_immune:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.immunity_start_time >= self.immunity_duration:
+                self.is_immune = False  # End immunity after duration
+                self.visible = True  # Ensure player is visible after immunity ends
+            else:
+                # Flashing effect (toggle visibility every 200ms)
+                if (current_time - self.immunity_start_time) // 200 % 2 == 0:
+                    self.visible = False
+                else:
+                    self.visible = True
+
+    def take_damage(self, amount):
+        """Take damage if not immune and start immunity."""
+        if not self.is_immune:
+            self.health -= amount
+            self.start_immunity()  # Activate immunity after taking damage
+
     def upgrade_power(self):
         if self.power_level < self.max_skill_level and self.coins >= self.power_level + 1:
             self.coins -= self.power_level + 1
@@ -91,5 +123,6 @@ class Player:
         self.hitbox.y += dy
 
     def draw(self, screen):
-        screen.blit(self.image, self.rect)
+        if self.visible:  # Draw only if visible (for flashing effect)
+            screen.blit(self.image, self.rect)
         # pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 2)  # Uncomment to visualize the hitbox
