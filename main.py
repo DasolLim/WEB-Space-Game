@@ -16,7 +16,6 @@ def home_screen():
     # Load background image and scale to fit screen
     background_image = pygame.image.load("assets/sprites/background/homescreen.png")
     background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
-    background_y = 0
 
     # Load asteroid sprite sheets
     asteroid_sprite_sheet_1 = pygame.image.load("assets/sprites/background/asteroid2.png")
