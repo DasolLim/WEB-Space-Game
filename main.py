@@ -1,6 +1,7 @@
 import pygame
 import sys
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK
+from src.game_loop import game_loop  # Import game_loop from src/game_loop.py
 
 def home_screen():
     pygame.init()
@@ -10,10 +11,6 @@ def home_screen():
     font_subtitle = pygame.font.SysFont(None, 48)
     font_options = pygame.font.SysFont(None, 36)
     clock = pygame.time.Clock()
-
-    # Load background image
-    background_image = pygame.image.load("assets/sprites/background/homescreen.png")
-    background_y = 0
 
     # Colors for text and buttons
     title_color = (255, 223, 0)  # Gold
@@ -29,10 +26,7 @@ def home_screen():
 
     running = True
     while running:
-        # Animate background
-        background_y = (background_y + 1) % SCREEN_HEIGHT
-        screen.blit(background_image, (0, background_y - SCREEN_HEIGHT))
-        screen.blit(background_image, (0, background_y))
+        screen.fill(BLACK)
 
         # Display title and subtitle
         title_text = font_title.render("SPACE ASTEROID GAME", True, title_color)
@@ -61,7 +55,7 @@ def home_screen():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if start_button_rect.collidepoint(event.pos):
-                    running = False  # Exit the home screen and start the game
+                    return True  # Indicate to start the game
                 if quit_button_rect.collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()
@@ -70,5 +64,14 @@ def home_screen():
         pygame.display.flip()
         clock.tick(60)
 
+def main():
+    while True:
+        # Show the home screen and wait for the user to start the game or quit
+        start_game = home_screen()
+        
+        if start_game:
+            print("Game Started!")  # Temporary placeholder
+            game_loop()  # Calls your actual game loop from src/game_loop.py
+
 if __name__ == "__main__":
-    home_screen()
+    main()
