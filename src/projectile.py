@@ -2,10 +2,11 @@ import pygame
 from config import PROJECTILE_SPEED, YELLOW, RED
 
 class Projectile:
-    def __init__(self, x, y, direction='up', color=YELLOW):
+    def __init__(self, x, y, direction='up', color=YELLOW, source="player"):
         self.rect = pygame.Rect(x, y, 5, 10)
         self.direction = direction  # 'up' for player projectiles, 'down' for enemy projectiles
         self.color = color  # Color of the projectile
+        self.source = source  # Track whether this was fired by "player" or "enemy"
 
     def move(self):
         # Move up for player projectiles, down for enemy projectiles

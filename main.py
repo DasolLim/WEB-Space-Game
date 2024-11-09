@@ -3,7 +3,7 @@ import sys
 import random
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK
 from src.game_loop import game_loop  # Import game_loop from src/game_loop.py
-
+ 
 def home_screen():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
