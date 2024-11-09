@@ -101,7 +101,30 @@ def game_loop():
             if random.randint(1, 60) == 1:
                 asteroids.append(Asteroid())
 
-            # Update projectiles and remove off-screen ones
+        # Spawn asteroids at intervals
+        if random.randint(1, 60) == 1:
+            asteroids.append(Asteroid())
+
+        # Update projectiles
+        for projectile in projectiles[:]:
+            projectile.move()
+            if projectile.rect.y < 0:
+                projectiles.remove(projectile)
+
+        # Update asteroids and check collisions
+        for asteroid in asteroids[:]:
+            if not asteroid.exploding:
+                asteroid.move()
+                
+            # Check collision with player's hitbox
+            if asteroid.hitbox.colliderect(player.hitbox) and not asteroid.exploding:
+                player.health -= 10
+                asteroid.explode()  # Start explosion on collision
+
+            elif asteroid.rect.top > SCREEN_HEIGHT:
+                asteroids.remove(asteroid)
+
+            # Check for projectile-asteroid collisions
             for projectile in projectiles[:]:
                 projectile.move()
                 if projectile.rect.y < 0:

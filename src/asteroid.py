@@ -6,7 +6,7 @@ class Asteroid:
     def __init__(self):
         # Load the asteroid image and randomly scale it
         self.original_image = pygame.image.load('assets/sprites/asteroid/asteriod.png').convert_alpha()
-        self.scale = random.uniform(0.5, 1.5)  # Scale factor between 0.5x and 1.5x
+        self.scale = random.uniform(0.5, 3)  # Scale factor between 0.5x and 1.5x
         self.image = pygame.transform.scale(
             self.original_image, 
             (int(self.original_image.get_width() * self.scale), int(self.original_image.get_height() * self.scale))
@@ -18,7 +18,7 @@ class Asteroid:
         )
         
         # Define a smaller hitbox inside the asteroid image rect to ignore empty space
-        hitbox_margin = 0.6  # 30% smaller on each side, adjust as needed
+        hitbox_margin = 0.6
         self.hitbox = pygame.Rect(
             self.rect.x + int(self.rect.width * hitbox_margin / 2),
             self.rect.y + int(self.rect.height * hitbox_margin / 2),
@@ -26,11 +26,15 @@ class Asteroid:
             int(self.rect.height * (1 - hitbox_margin))
         )
 
+        # Rotation setup
+        self.rotation_angle = 0  # Initial rotation angle
+        self.rotation_speed = random.uniform(1, 3)  # Random rotation speed between 1 and 3 degrees per frame
+
         # Explosion animation setup
         self.exploding = False
         self.explosion_images = self.load_explosion_images('assets/sprites/asteroid/asteroidExplode.png', 8)
         self.explosion_index = 0
-        self.explosion_frame_delay = 5  # Adjust frame delay for explosion animation speed
+        self.explosion_frame_delay = 5
         self.explosion_frame_counter = 0
 
     def load_explosion_images(self, path, frames):
@@ -56,6 +60,9 @@ class Asteroid:
             self.rect.y += ASTEROID_SPEED
             self.hitbox.y += ASTEROID_SPEED  # Move the hitbox as well
 
+            # Increase the rotation angle
+            self.rotation_angle = (self.rotation_angle + self.rotation_speed) % 360  # Keep it within 0-359 degrees
+
     def draw(self, screen):
         if self.exploding:
             # Draw the explosion animation
@@ -67,8 +74,13 @@ class Asteroid:
                     self.explosion_frame_counter = 0
                     self.explosion_index += 1
         else:
-            # Draw the asteroid if it's not exploding
-            screen.blit(self.image, self.rect)
+            # Rotate the image and get the new rect centered on the original position
+            rotated_image = pygame.transform.rotate(self.image, self.rotation_angle)
+            rotated_rect = rotated_image.get_rect(center=self.rect.center)
+            
+            # Draw the rotated asteroid
+            screen.blit(rotated_image, rotated_rect)
+
             # Uncomment the following line to visualize the hitbox for debugging
             # pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 2)
 
