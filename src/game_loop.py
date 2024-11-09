@@ -5,6 +5,7 @@ from config import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, BLACK, WHITE
 from src.player import Player
 from src.asteroid import Asteroid
 from src.projectile import Projectile
+from src.enemy import Enemy
 
 def game_loop():
     pygame.init()
@@ -22,6 +23,9 @@ def game_loop():
     asteroids = []
     projectiles = []
     score = 0
+    # Create an instance of Enemy
+    enemy_image_path = 'assets\sprites\enemies\enemy1.png'  # Replace with actual enemy image path
+    enemies = [Enemy(enemy_image_path, SCREEN_WIDTH)]
 
     font = pygame.font.SysFont(None, 36)
     running = True
@@ -80,7 +84,9 @@ def game_loop():
         # Draw asteroids
         for asteroid in asteroids:
             asteroid.draw(screen)
-
+        for enemy in enemies:
+            enemy.update(projectiles)  # Update each enemy and add projectiles to list
+            enemy.draw(screen)         
         # Draw everything
         player.draw(screen)
         for asteroid in asteroids:
