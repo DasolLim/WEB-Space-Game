@@ -115,6 +115,72 @@ def home_screen():
         pygame.display.flip()
         clock.tick(60)
 
+def end_screen():
+    pygame.init()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Game Over")
+    font_title = pygame.font.Font(pygame.font.match_font('arcadeclassic', bold=True), 72)
+    font_options = pygame.font.Font(pygame.font.match_font('arcadeclassic', bold=True), 48)
+    font_prompt = pygame.font.Font(pygame.font.match_font('arcadeclassic', bold=True), 42)
+    clock = pygame.time.Clock()
+
+    # Load background image and scale to fit screen
+    background_image = pygame.image.load("assets/sprites/background/endscreen.png")
+    background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+    # Colors for text and buttons
+    title_color = (255, 255, 0)  # Yellow
+    button_color = (34, 139, 34)  # Forest Green
+    button_hover_color = (50, 205, 50)  # Lime Green
+    button_text_color = WHITE
+
+    # Button attributes
+    button_width, button_height = 200, 60
+    yes_button_rect = pygame.Rect((SCREEN_WIDTH // 2 - button_width - 20, SCREEN_HEIGHT // 2 + 50), (button_width, button_height))
+    no_button_rect = pygame.Rect((SCREEN_WIDTH // 2 + 20, SCREEN_HEIGHT // 2 + 50), (button_width, button_height))
+
+    running = True
+    while running:
+        screen.blit(background_image, (0, 0))
+
+        # Display title
+        title_text = font_title.render("GAME OVER", True, title_color)
+        screen.blit(title_text, (SCREEN_WIDTH // 2 - title_text.get_width() // 2, 150))
+
+        # Display prompt
+        prompt_text = font_prompt.render("Do you want to play again?", True, (255, 255, 0))
+        screen.blit(prompt_text, (SCREEN_WIDTH // 2 - prompt_text.get_width() // 2, SCREEN_HEIGHT // 2 - 20))
+
+        # Draw buttons
+        mouse_pos = pygame.mouse.get_pos()
+
+        yes_color = button_hover_color if yes_button_rect.collidepoint(mouse_pos) else button_color
+        no_color = button_hover_color if no_button_rect.collidepoint(mouse_pos) else button_color
+
+        pygame.draw.rect(screen, yes_color, yes_button_rect, border_radius=30)
+        pygame.draw.rect(screen, no_color, no_button_rect, border_radius=30)
+
+        yes_text = font_options.render("YES", True, button_text_color)
+        no_text = font_options.render("NO", True, button_text_color)
+        screen.blit(yes_text, (yes_button_rect.x + button_width // 2 - yes_text.get_width() // 2, yes_button_rect.y + button_height // 2 - yes_text.get_height() // 2))
+        screen.blit(no_text, (no_button_rect.x + button_width // 2 - no_text.get_width() // 2, no_button_rect.y + button_height // 2 - no_text.get_height() // 2))
+
+        # Event handling
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if yes_button_rect.collidepoint(event.pos):
+                    game_loop()  # Restart the game loop
+                if no_button_rect.collidepoint(event.pos):
+                    pygame.quit()
+                    sys.exit()
+
+        # Update display
+        pygame.display.flip()
+        clock.tick(60)
+
 def main():
     while True:
         # Show the home screen and wait for the user to start the game or quit
