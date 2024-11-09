@@ -7,6 +7,30 @@ from src.asteroid import Asteroid
 from src.projectile import Projectile
 from src.enemy import Enemy
 
+def display_shop(screen, player):
+    font = pygame.font.SysFont(None, 36)
+    screen.fill(BLACK)  # Fill the screen with black background for the shop
+
+    # Display player's coins
+    coins_text = font.render(f"Coins: {player.coins}", True, WHITE)
+    screen.blit(coins_text, (10, 10))
+
+    # Display upgrade options
+    power_text = font.render(f"Power (Level {player.power_level}): Cost {player.power_level + 1}", True, WHITE)
+    speed_text = font.render(f"Speed (Level {player.speed_level}): Cost {player.speed_level + 1}", True, WHITE)
+    health_text = font.render(f"Health (Level {player.health_level}): Cost {player.health_level + 1}", True, WHITE)
+
+    screen.blit(power_text, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60))
+    screen.blit(speed_text, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2))
+    screen.blit(health_text, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 60))
+
+    # Display instructions
+    instructions = font.render("Press 1 to upgrade Power, 2 for Speed, 3 for Health", True, WHITE)
+    close_text = font.render("Press P to close the shop", True, WHITE)
+    screen.blit(instructions, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 120))
+    screen.blit(close_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 160))
+    pygame.display.flip()
+
 def game_loop():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -22,88 +46,83 @@ def game_loop():
 
     asteroids = []
     projectiles = []
+    enemies = [Enemy('assets/sprites/enemies/enemy1.png', SCREEN_WIDTH)]
     score = 0
-    # Create an instance of Enemy
-    enemy_image_path = 'assets\sprites\enemies\enemy1.png'  # Replace with actual enemy image path
-    enemies = [Enemy(enemy_image_path, SCREEN_WIDTH)]
+    show_shop = False
 
-    font = pygame.font.SysFont(None, 36)
     running = True
     while running:
-        screen.fill(BLACK)
+        if show_shop:
+            display_shop(screen, player)
+        else:
+            screen.fill(BLACK)
+            player.draw(screen)
+            for asteroid in asteroids:
+                asteroid.draw(screen)
+            for enemy in enemies:
+                enemy.update(projectiles)
+                enemy.draw(screen)
+            for projectile in projectiles:
+                projectile.draw(screen)
+
+            # Display health and score
+            font = pygame.font.SysFont(None, 36)
+            health_text = font.render(f"Health: {player.health}", True, WHITE)
+            score_text = font.render(f"Score: {score}", True, WHITE)
+            screen.blit(health_text, (10, 10))
+            screen.blit(score_text, (SCREEN_WIDTH - 150, 10))
+
+            pygame.display.flip()
 
         # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                projectiles.append(Projectile(player.rect.centerx, player.rect.top))
-                shoot_sound = pygame.mixer.Sound('assets/sprites/sounds/laser.mp3')
-                shoot_sound.play()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    show_shop = not show_shop  # Toggle the shop
+                elif show_shop:
+                    # Upgrade logic while shop is open
+                    if event.key == pygame.K_1:
+                        player.upgrade_power()
+                    elif event.key == pygame.K_2:
+                        player.upgrade_speed()
+                    elif event.key == pygame.K_3:
+                        player.upgrade_health()
+                elif event.key == pygame.K_SPACE:
+                    projectiles.append(Projectile(player.rect.centerx, player.rect.top))
 
-        # Player movement
-        keys = pygame.key.get_pressed()
-        player.move(keys)
+        # Only update the game state if the shop is not open
+        if not show_shop:
+            keys = pygame.key.get_pressed()
+            player.move(keys)
+            # Spawn asteroids at intervals
+            if random.randint(1, 60) == 1:
+                asteroids.append(Asteroid())
 
-        # Spawn asteroids at intervals
-        if random.randint(1, 60) == 1:
-            asteroids.append(Asteroid())
-
-        # Update projectiles
-        for projectile in projectiles[:]:
-            projectile.move()
-            if projectile.rect.y < 0:
-                projectiles.remove(projectile)
-
-        # Update asteroids and check collisions
-        for asteroid in asteroids[:]:
-            if not asteroid.exploding:
-                asteroid.move()
-                
-            # Check collision with player's hitbox
-            if asteroid.rect.colliderect(player.hitbox) and not asteroid.exploding:
-                player.health -= 10
-                asteroid.explode()  # Start explosion on collision
-
-            elif asteroid.rect.top > SCREEN_HEIGHT:
-                asteroids.remove(asteroid)
-
-            # Check for projectile-asteroid collisions
+            # Update projectiles and remove off-screen ones
             for projectile in projectiles[:]:
-                if projectile.rect.colliderect(asteroid.rect) and not asteroid.exploding:
+                projectile.move()
+                if projectile.rect.y < 0:
                     projectiles.remove(projectile)
-                    asteroid.explode()  # Start explosion on collision
-                    score += 20
-                    break
 
-            # Remove asteroid if explosion animation is complete
-            if asteroid.is_exploded():
-                asteroids.remove(asteroid)
-
-        # Draw asteroids
-        for asteroid in asteroids:
-            asteroid.draw(screen)
-        for enemy in enemies:
-            enemy.update(projectiles)  # Update each enemy and add projectiles to list
-            enemy.draw(screen)         
-        # Draw everything
-        player.draw(screen)
-        for asteroid in asteroids:
-            asteroid.draw(screen)
-        for projectile in projectiles:
-            projectile.draw(screen)
-
-        # Display health and score
-        health_text = font.render(f"Health: {player.health}", True, WHITE)
-        score_text = font.render(f"Score: {score}", True, WHITE)
-        screen.blit(health_text, (10, 10))
-        screen.blit(score_text, (SCREEN_WIDTH - 150, 10))
-
-        # Update display and check for game over
-        pygame.display.flip()
-        if player.health <= 0:
-            print("Game Over!")
-            running = False
+            # Update asteroids and handle collisions
+            for asteroid in asteroids[:]:
+                if not asteroid.exploding:
+                    asteroid.move()
+                if asteroid.rect.colliderect(player.hitbox) and not asteroid.exploding:
+                    player.health -= 10
+                    asteroid.explode()
+                elif asteroid.rect.top > SCREEN_HEIGHT:
+                    asteroids.remove(asteroid)
+                for projectile in projectiles[:]:
+                    if projectile.rect.colliderect(asteroid.rect) and not asteroid.exploding:
+                        projectiles.remove(projectile)
+                        asteroid.explode()
+                        score += 20
+                        break
+                if asteroid.is_exploded():
+                    asteroids.remove(asteroid)
 
         clock.tick(FPS)

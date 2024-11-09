@@ -2,8 +2,6 @@ import pygame
 import random
 from src.projectile import Projectile  # Import the existing Projectile class
 
-
-
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, image_path, screen_width):
         super().__init__()
@@ -25,6 +23,9 @@ class Enemy(pygame.sprite.Sprite):
         # Shooting interval
         self.shoot_interval = random.randint(60, 120)  # Random interval to shoot
         self.shoot_timer = 0
+        
+        # Health points
+        self.hp = 3  # Enemy starts with 3 HP
 
     def update(self, projectiles):
         # Horizontal movement
@@ -38,10 +39,15 @@ class Enemy(pygame.sprite.Sprite):
         self.shoot_timer += 1
         if self.shoot_timer >= self.shoot_interval:
             # Reset timer and shoot a projectile
-            projectile = Projectile(self.rect.centerx, self.rect.bottom, "down")
+            projectile = Projectile(self.rect.centerx, self.rect.bottom, 'down')
             projectiles.append(projectile)  # Add to projectiles list
             self.shoot_timer = 0
             self.shoot_interval = random.randint(60, 120)  # Reset interval
+
+    def take_damage(self):
+        self.hp -= 1  # Decrease HP by 1
+        if self.hp <= 0:
+            self.kill()  # Remove the enemy if HP is 0 or below
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
