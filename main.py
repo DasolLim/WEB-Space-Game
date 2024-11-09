@@ -110,11 +110,6 @@ def home_screen():
 
         # Update display
         pygame.display.flip()
-<<<<<<< HEAD
-        clock.tick(60) 
-   
-def main( ):
-=======
         clock.tick(60)
 
 def end_screen():
@@ -184,7 +179,6 @@ def end_screen():
         clock.tick(60)
 
 def main():
->>>>>>> c4fa5b661f01a9c54e4fcf727dff14d0e334603b
     while True:
         # Show the home screen and wait for the user to start the game or quit
         start_game = home_screen()
