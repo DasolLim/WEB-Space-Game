@@ -5,14 +5,14 @@ from config import SCREEN_WIDTH, SCREEN_HEIGHT, ASTEROID_SPEED
 class Asteroid:
     def __init__(self):
         # Load the asteroid image
-        self.image = pygame.image.load('../assets/sprites/asteroid/asteriod.png').convert_alpha()
+        self.image = pygame.image.load('assets/sprites/asteroid/asteriod.png').convert_alpha()
         self.rect = self.image.get_rect(
             center=(random.randint(0, SCREEN_WIDTH - 50), -50)
         )
         
         # Explosion animation setup
         self.exploding = False
-        self.explosion_images = self.load_explosion_images('../assets/sprites/asteroid/asteroidExplode.png', 8)
+        self.explosion_images = self.load_explosion_images('assets/sprites/asteroid/asteroidExplode.png', 8)
         self.explosion_index = 0
         self.explosion_frame_delay = 5  # Adjust frame delay for explosion animation speed
         self.explosion_frame_counter = 0
