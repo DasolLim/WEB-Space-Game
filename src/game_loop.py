@@ -130,9 +130,9 @@ def game_loop():
         if show_shop:
             display_shop(screen, player)
         else:
-            # Draw scrolling background
-            background_y1 += 1
-            background_y2 += 1
+            # Draw scrolling background faster by increasing the movement speed
+            background_y1 += 5
+            background_y2 += 5
 
             # Reset background positions when they move off the screen
             if background_y1 >= SCREEN_HEIGHT:
@@ -254,7 +254,5 @@ def game_loop():
                         score += 50
                         enemies.remove(enemy)
                         break
-
-        
 
         clock.tick(FPS)
