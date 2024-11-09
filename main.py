@@ -3,7 +3,7 @@ import sys
 import random
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK
 from src.game_loop import game_loop  # Import game_loop from src/game_loop.py
-
+ 
 def home_screen():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -110,9 +110,9 @@ def home_screen():
 
         # Update display
         pygame.display.flip()
-        clock.tick(60)
-
-def main():
+        clock.tick(60) 
+   
+def main( ):
     while True:
         # Show the home screen and wait for the user to start the game or quit
         start_game = home_screen()
