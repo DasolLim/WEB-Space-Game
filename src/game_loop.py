@@ -62,7 +62,7 @@ def game_loop():
                 asteroid.move()
                 
             # Check collision with player's hitbox
-            if asteroid.rect.colliderect(player.hitbox) and not asteroid.exploding:
+            if asteroid.hitbox.colliderect(player.hitbox) and not asteroid.exploding:
                 player.health -= 10
                 asteroid.explode()  # Start explosion on collision
 
