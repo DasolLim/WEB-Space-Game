@@ -38,27 +38,43 @@ class Player:
         self.speed = self.base_speed
         self.damage = self.base_damage
         self.max_health = self.base_health
+        self.health = self.max_health  # Set health to max health initially
 
     def upgrade_power(self):
+        """
+        Increases player power level and damage if coins are sufficient.
+        """
         if self.power_level < self.max_skill_level and self.coins >= self.power_level + 1:
             self.coins -= self.power_level + 1
             self.power_level += 1
             self.damage = self.base_damage + self.power_level
+            print(f"Power upgraded to level {self.power_level}, damage is now {self.damage}")
 
     def upgrade_speed(self):
+        """
+        Increases player speed level if coins are sufficient.
+        """
         if self.speed_level < self.max_skill_level and self.coins >= self.speed_level + 1:
             self.coins -= self.speed_level + 1
             self.speed_level += 1
             self.speed = self.base_speed + self.speed_level
+            print(f"Speed upgraded to level {self.speed_level}, speed is now {self.speed}")
 
     def upgrade_health(self):
+        """
+        Increases player health level and max health if coins are sufficient.
+        """
         if self.health_level < self.max_skill_level and self.coins >= self.health_level + 1:
             self.coins -= self.health_level + 1
             self.health_level += 1
             self.max_health = self.base_health + (self.health_level * 10)
+            self.health = min(self.health + 10, self.max_health)  # Increase current health by 10, up to max health
+            print(f"Health upgraded to level {self.health_level}, max health is now {self.max_health}")
 
     def update_image(self):
-        # Update player image based on current health
+        """
+        Update player image based on current health level.
+        """
         if self.health > 75:
             self.image = self.images["full"]
         elif 51 <= self.health <= 75:
@@ -69,6 +85,9 @@ class Player:
             self.image = self.images["low"]
 
     def move(self, keys):
+        """
+        Handles player movement based on key inputs and speed.
+        """
         dx = 0
         dy = 0
 
@@ -91,5 +110,9 @@ class Player:
         self.hitbox.y += dy
 
     def draw(self, screen):
+        """
+        Draws the player on the screen.
+        """
         screen.blit(self.image, self.rect)
-        # pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 2)  # Uncomment to visualize the hitbox
+        # Uncomment the line below to visualize the hitbox
+        # pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 2)

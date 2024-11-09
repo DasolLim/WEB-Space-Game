@@ -6,30 +6,7 @@ from src.player import Player
 from src.asteroid import Asteroid
 from src.projectile import Projectile
 from src.enemy import Enemy
-
-def display_shop(screen, player):
-    font = pygame.font.SysFont(None, 36)
-    screen.fill(BLACK)  # Fill the screen with black background for the shop
-
-    # Display player's coins
-    coins_text = font.render(f"Coins: {player.coins}", True, WHITE)
-    screen.blit(coins_text, (10, 10))
-
-    # Display upgrade options
-    power_text = font.render(f"Power (Level {player.power_level}): Cost {player.power_level + 1}", True, WHITE)
-    speed_text = font.render(f"Speed (Level {player.speed_level}): Cost {player.speed_level + 1}", True, WHITE)
-    health_text = font.render(f"Health (Level {player.health_level}): Cost {player.health_level + 1}", True, WHITE)
-
-    screen.blit(power_text, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60))
-    screen.blit(speed_text, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2))
-    screen.blit(health_text, (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 60))
-
-    # Display instructions
-    instructions = font.render("Press 1 to upgrade Power, 2 for Speed, 3 for Health", True, WHITE)
-    close_text = font.render("Press P to close the shop", True, WHITE)
-    screen.blit(instructions, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 120))
-    screen.blit(close_text, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 + 160))
-    pygame.display.flip()
+from src.player_shop import display_shop, handle_shop_click  # Import shop functions
 
 def game_loop():
     pygame.init()
@@ -46,7 +23,7 @@ def game_loop():
 
     asteroids = []
     projectiles = []
-    enemies = [Enemy('assets/sprites/enemies/enemy1.png', SCREEN_WIDTH)]
+    enemies = [Enemy('assets/sprites/enemies/enemy1.png', SCREEN_WIDTH) for _ in range(3)]  # Start with 3 enemies
     score = 0
     show_shop = False
     destroyed_asteroids_count = 0  # Counter for asteroids destroyed by the player
@@ -105,44 +82,24 @@ def game_loop():
             if random.randint(1, 60) == 1:
                 asteroids.append(Asteroid())
 
-        # Update projectiles
-        for projectile in projectiles[:]:
-            projectile.move()
-            if projectile.rect.y < 0:
-                projectiles.remove(projectile)
+            # Update projectiles
+            for projectile in projectiles[:]:
+                projectile.move()
+                if projectile.rect.y < 0:
+                    projectiles.remove(projectile)
 
-        # Update asteroids and handle collisions
-        for asteroid in asteroids[:]:
-            if not asteroid.exploding:
-                asteroid.move()
+            # Update asteroids and handle collisions
+            for asteroid in asteroids[:]:
+                if not asteroid.exploding:
+                    asteroid.move()
 
-            # Check collision with player's hitbox
-            if asteroid.hitbox.colliderect(player.hitbox) and not asteroid.exploding:
-                player.health -= 10
-                asteroid.explode()  # Start explosion on collision
+                # Check collision with player's hitbox
+                if asteroid.hitbox.colliderect(player.hitbox) and not asteroid.exploding:
+                    player.health -= 10
+                    asteroid.explode()  # Start explosion on collision
 
-            elif asteroid.hitbox.top > SCREEN_HEIGHT:
-                asteroids.remove(asteroid)
-
-        # Check for projectile-asteroid collisions
-        # Update projectiles
-        for projectile in projectiles[:]:
-            projectile.move()
-            if projectile.rect.y < 0 or projectile.rect.y > SCREEN_HEIGHT:
-                projectiles.remove(projectile)
-
-        # Handle collisions
-        for asteroid in asteroids[:]:
-            if not asteroid.exploding:
-                asteroid.move()
-
-            # Check collision with player's hitbox
-            if asteroid.hitbox.colliderect(player.hitbox) and not asteroid.exploding:
-                player.health -= 10
-                asteroid.explode()
-
-            elif asteroid.rect.top > SCREEN_HEIGHT:
-                asteroids.remove(asteroid)
+                elif asteroid.hitbox.top > SCREEN_HEIGHT:
+                    asteroids.remove(asteroid)
 
             # Check for player projectile-asteroid collisions
             for projectile in projectiles[:]:
@@ -162,20 +119,17 @@ def game_loop():
                 projectiles.remove(projectile)
                 player.health -= 10  # Damage the player
 
-
-            # Remove asteroid if explosion animation is complete
-            if asteroid.is_exploded():
-                asteroids.remove(asteroid)
-
         # Check for projectile-enemy collisions
         for enemy in enemies[:]:
             for projectile in projectiles[:]:
                 if projectile.rect.colliderect(enemy.rect):
                     projectiles.remove(projectile)
-                    enemy.take_damage()
+                    enemy.take_damage(player.damage)  # Apply damage based on player's power level
                     if enemy.hp <= 0:
                         score += 50
                         enemies.remove(enemy)
                         break
+
+        
 
         clock.tick(FPS)
