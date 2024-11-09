@@ -14,10 +14,10 @@ def game_loop():
     clock = pygame.time.Clock()
 
     player = Player([
-        'assets\sprites\spaceship\MainShipBaseFullhealth.png',   # Image 1: health 100-76
-        'assets\sprites\spaceship\MainShipBaseSlightdamage.png', # Image 2: health 75-51
-        'assets\sprites\spaceship\MainShipBaseDamaged.png',      # Image 3: health 50-26
-        'assets\sprites\spaceship\MainShipBaseVerydamaged.png',  # Image 4: health 25-0
+        'assets/sprites/spaceship/MainShipBaseFullhealth.png',   # Image 1: health 100-76
+        'assets/sprites/spaceship/MainShipBaseSlightdamage.png', # Image 2: health 75-51
+        'assets/sprites/spaceship/MainShipBaseDamaged.png',      # Image 3: health 50-26
+        'assets/sprites/spaceship/MainShipBaseVerydamaged.png',  # Image 4: health 25-0
     ])
 
     asteroids = []
@@ -61,13 +61,13 @@ def game_loop():
             if not asteroid.exploding:
                 asteroid.move()
                 
-            if asteroid.rect.colliderect(player.rect) and not asteroid.exploding:
+            # Check collision with player's hitbox
+            if asteroid.rect.colliderect(player.hitbox) and not asteroid.exploding:
                 player.health -= 10
                 asteroid.explode()  # Start explosion on collision
 
             elif asteroid.rect.top > SCREEN_HEIGHT:
                 asteroids.remove(asteroid)
-                score += 10
 
             # Check for projectile-asteroid collisions
             for projectile in projectiles[:]:

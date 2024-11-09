@@ -14,6 +14,14 @@ class Player:
         self.rect = self.image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50))
         self.health = 100
 
+        # Define a smaller hitbox inside the player's image rect
+        self.hitbox = pygame.Rect(
+            self.rect.x + 7,  # Adjust x position for hitbox
+            self.rect.y + 8,  # Adjust y position for hitbox
+            self.rect.width - 15,  # Make hitbox narrower than the image
+            self.rect.height - 15  # Make hitbox shorter than the image
+        )
+
     def update_image(self):
         # Update player image based on current health
         if self.health > 75:
@@ -41,9 +49,15 @@ class Player:
         if keys[pygame.K_DOWN] and self.rect.bottom < SCREEN_HEIGHT:
             dy = PLAYER_SPEED
 
-        # Apply movement
+        # Apply movement to both image rect and hitbox
         self.rect.x += dx
         self.rect.y += dy
+        self.hitbox.x += dx
+        self.hitbox.y += dy
 
     def draw(self, screen):
+        # Draw the player's image
         screen.blit(self.image, self.rect)
+        
+        # Draw the player's hitbox as an outline (uncomment to visualize the hitbox)
+        # pygame.draw.rect(screen, (255, 0, 0), self.hitbox, 2)  # Red color with 2-pixel thickness
