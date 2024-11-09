@@ -134,10 +134,10 @@ def game_loop():
             for asteroid in asteroids[:]:
                 if not asteroid.exploding:
                     asteroid.move()
-                if asteroid.rect.colliderect(player.hitbox) and not asteroid.exploding:
+                if asteroid.hitbox.colliderect(player.hitbox) and not asteroid.exploding:
                     player.health -= 10
                     asteroid.explode()
-                elif asteroid.rect.top > SCREEN_HEIGHT:
+                elif asteroid.hitbox.top > SCREEN_HEIGHT:
                     asteroids.remove(asteroid)
                 for projectile in projectiles[:]:
                     if projectile.rect.colliderect(asteroid.rect) and not asteroid.exploding:
@@ -147,5 +147,14 @@ def game_loop():
                         break
                 if asteroid.is_exploded():
                     asteroids.remove(asteroid)
-
+ # Check for projectile-enemy collisions
+            for enemy in enemies[:]:
+                for projectile in projectiles[:]:
+                    if projectile.rect.colliderect(enemy.rect):
+                        projectiles.remove(projectile)
+                        enemy.take_damage()  # Enemy takes 1 damage
+                        if enemy.hp <= 0:
+                            score += 50  # Score increase for defeating enemy
+                            enemies.remove(enemy)
+                            break
         clock.tick(FPS)
